@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./ChatWidget.css";
-
 import PropTypes from "prop-types";
+import { sendChatMessage, clearChatHistory } from "../../api/chatService";
 
 /**
  * ChatWidget component provides a floating chat interface for customer support
+ * with AI integration
  * @component
  * @param {Object} props
  * @param {number} [props.maxMessageLength=500] - Maximum length of a message
@@ -20,7 +21,7 @@ export function ChatWidget({
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
-      text: "👋 Hi! How can we help you today?",
+      text: "👋 Hi! How can I help you with your Jellycat plush today?",
       sender: "support",
       time: new Date().toLocaleTimeString(),
     },
@@ -28,13 +29,22 @@ export function ChatWidget({
   const [currentMessage, setCurrentMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const maxMessageLength = 500;
+  const [sessionId, setSessionId] = useState(`session_${Date.now()}`);
+  const messagesEndRef = useRef(null);
+
+  // Scroll to bottom of messages when new ones arrive
+  useEffect(() => {
+    if (isChatOpen && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isChatOpen]);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
-    if (isChatOpen) {
+    if (!isChatOpen) {
       setTimeout(() => {
         document.getElementById("chat-input")?.focus();
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 300);
     }
   };
@@ -53,36 +63,54 @@ export function ChatWidget({
 
   const sendMessage = async () => {
     if (!validateMessage(currentMessage) || isLoading) return;
-    if (currentMessage.length > maxMessageLength) {
-      setError(`Message cannot exceed ${maxMessageLength} characters`);
-      return;
-    }
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const newMessage = {
+      // Add user message to UI immediately
+      const userMessage = {
         text: currentMessage,
         sender: "user",
         time: new Date().toLocaleTimeString(),
       };
 
-      setMessages((prev) => [...prev, newMessage]);
+      setMessages((prev) => {
+        // Limit the number of messages
+        const updatedMessages = [...prev, userMessage];
+        if (updatedMessages.length > maxMessages) {
+          return updatedMessages.slice(-maxMessages);
+        }
+        return updatedMessages;
+      });
+      
+      // Clear input field
       setCurrentMessage("");
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Call custom onSend callback if provided
+      if (onSend) {
+        onSend(currentMessage);
+      }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: "Thanks for your message! Our team will respond shortly.",
+      // Call AI service
+      const response = await sendChatMessage(currentMessage, sessionId);
+
+      // Add AI response to UI
+      setMessages((prev) => {
+        const aiMessage = {
+          text: response.message,
           sender: "support",
           time: new Date().toLocaleTimeString(),
-        },
-      ]);
+        };
+
+        const updatedMessages = [...prev, aiMessage];
+        if (updatedMessages.length > maxMessages) {
+          return updatedMessages.slice(-maxMessages);
+        }
+        return updatedMessages;
+      });
     } catch (err) {
+      console.error("Chat error:", err);
       setError("Failed to send message. Please try again.");
     } finally {
       setIsLoading(false);
@@ -93,6 +121,31 @@ export function ChatWidget({
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       sendMessage();
+    }
+  };
+
+  const resetChat = async () => {
+    try {
+      setIsLoading(true);
+      await clearChatHistory(sessionId);
+      
+      // Generate a new session ID
+      const newSessionId = `session_${Date.now()}`;
+      setSessionId(newSessionId);
+      
+      // Reset messages
+      setMessages([
+        {
+          text: "👋 Chat history cleared. How can I help you today?",
+          sender: "support",
+          time: new Date().toLocaleTimeString(),
+        },
+      ]);
+    } catch (err) {
+      console.error("Failed to reset chat:", err);
+      setError("Failed to reset chat. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -107,19 +160,29 @@ export function ChatWidget({
         >
           💬
         </button>
-        <div className="notification-badge">2</div>
+        {messages.length > 1 && <div className="notification-badge">{messages.length - 1}</div>}
       </div>
 
       <div className={`chat-window ${isChatOpen ? "open" : ""}`}>
         <div className="chat-header">
-          <div className="chat-title">Live Chat</div>
-          <button
-            className="close-button"
-            aria-label="Close chat"
-            onClick={toggleChat}
-          >
-            ✕
-          </button>
+          <div className="chat-title">AI Support Chat</div>
+          <div className="chat-actions">
+            <button
+              className="reset-button"
+              aria-label="Reset chat"
+              onClick={resetChat}
+              disabled={isLoading}
+            >
+              🔄
+            </button>
+            <button
+              className="close-button"
+              aria-label="Close chat"
+              onClick={toggleChat}
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <div className="messages-container">
@@ -132,6 +195,7 @@ export function ChatWidget({
               <div className="message-time">{message.time}</div>
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
 
         <div className="chat-input-container">
@@ -161,3 +225,9 @@ export function ChatWidget({
     </div>
   );
 }
+
+ChatWidget.propTypes = {
+  maxMessageLength: PropTypes.number,
+  maxMessages: PropTypes.number,
+  onSend: PropTypes.func,
+};

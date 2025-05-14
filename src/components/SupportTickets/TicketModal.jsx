@@ -1,7 +1,9 @@
 import React from "react";
-import "./styles.css";
+import PropTypes from "prop-types";
 
 export const TicketModal = ({ ticket, onClose }) => {
+  if (!ticket) return null;
+  
   const handleOverlayClick = (event) => {
     if (event.target === event.currentTarget) {
       onClose();
@@ -25,8 +27,6 @@ export const TicketModal = ({ ticket, onClose }) => {
       }
     }
   };
-
-  if (!ticket) return null;
 
   return (
     <div
@@ -102,4 +102,24 @@ export const TicketModal = ({ ticket, onClose }) => {
       </div>
     </div>
   );
+};
+
+TicketModal.propTypes = {
+  ticket: PropTypes.shape({
+    id: PropTypes.string,
+    subject: PropTypes.string,
+    category: PropTypes.string,
+    status: PropTypes.string,
+    statusColor: PropTypes.string,
+    priority: PropTypes.string,
+    priorityColor: PropTypes.string,
+    description: PropTypes.string,
+    updates: PropTypes.arrayOf(
+      PropTypes.shape({
+        message: PropTypes.string,
+        time: PropTypes.string,
+      })
+    ),
+  }),
+  onClose: PropTypes.func.isRequired,
 };

@@ -1,7 +1,7 @@
-import React from "react";
-import "./styles.css";
+import React from 'react';
+import PropTypes from 'prop-types';
 
-export const TicketsTable = ({ tickets, onViewDetails }) => {
+export const TicketsTable = ({ tickets = [], onViewDetails }) => {
   return (
     <div className="table-container">
       <table className="tickets-table">
@@ -51,4 +51,18 @@ export const TicketsTable = ({ tickets, onViewDetails }) => {
       </table>
     </div>
   );
+};
+
+TicketsTable.propTypes = {
+  tickets: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      subject: PropTypes.string.isRequired,
+      category: PropTypes.string.isRequired,
+      status: PropTypes.string.isRequired,
+      priority: PropTypes.string.isRequired,
+      lastUpdate: PropTypes.string.isRequired,
+    })
+  ),
+  onViewDetails: PropTypes.func.isRequired,
 };

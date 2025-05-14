@@ -1,5 +1,5 @@
-"use client";
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './styles.css';
 
 function LandingPage() {
@@ -14,7 +14,7 @@ function LandingPage() {
             </div>
             <div className="navbar__links">
               <div className="navbar__link">Home</div>
-              <div className="navbar__link">Help Center</div>
+              <Link to="/help-center" className="navbar__link">Help Center</Link>
             </div>
           </div>
           <div className="navbar__actions">
@@ -28,12 +28,12 @@ function LandingPage() {
           <div className="hero__content">
             <h1 className="hero__title">Welcome to Jellycat</h1>
             <h1 className="hero__subtitle">Customer Support</h1>
-            <p className="hero__description">
+            <p className="hero__description text-center mx-auto max-w-2xl">
               Get the help you need with your favorite plush companions. Our support team is here to assist you with any questions or concerns.
             </p>
             <div className="hero__actions">
-              <button className="button button--primary">Create Support Ticket</button>
-              <button className="button button--outline">Browse Help Center</button>
+              <Link to="/submit-ticket" className="button button--primary">Create Support Ticket</Link>
+              <Link to="/help-center" className="button button--outline">Browse Help Center</Link>
             </div>
             <div className="hero__images">
               <div className="hero__image-box" />
@@ -53,7 +53,7 @@ function LandingPage() {
               <p className="help-category__description">
                 Need help with your Jellycat? Create a support ticket and our team will assist you promptly.
               </p>
-              <div className="help-category__link">Get Support →</div>
+              <Link to="/submit-ticket" className="help-category__link">Get Support →</Link>
             </div>
           </div>
           <div className="help-category">
@@ -63,7 +63,7 @@ function LandingPage() {
               <p className="help-category__description">
                 Browse our comprehensive guides and articles to find answers to common questions.
               </p>
-              <div className="help-category__link">Learn More →</div>
+              <Link to="/help-center" className="help-category__link">Learn More →</Link>
             </div>
           </div>
           <div className="help-category">
@@ -73,7 +73,7 @@ function LandingPage() {
               <p className="help-category__description">
                 Find quick answers to frequently asked questions about our products and services.
               </p>
-              <div className="help-category__link">View FAQs →</div>
+              <Link to="/help-center" className="help-category__link">View FAQs →</Link>
             </div>
           </div>
         </div>
@@ -86,7 +86,7 @@ function LandingPage() {
                 Our support team is available to help you with any questions or concerns about your Jellycat products.
               </p>
               <div className="contact-section__actions">
-                <button className="button button--primary">Contact Support</button>
+                <Link to="/submit-ticket" className="button button--primary">Contact Support</Link>
                 <button className="button button--outline">Live Chat</button>
               </div>
             </div>
@@ -107,14 +107,14 @@ function LandingPage() {
               <div className="footer__links">
                 <div className="footer__column">
                   <h4 className="footer__column-title">Support</h4>
-                  <a className="footer__link">Help Center</a>
-                  <a className="footer__link">Submit Ticket</a>
-                  <a className="footer__link">Contact Us</a>
+                  <Link to="/help-center" className="footer__link">Help Center</Link>
+                  <Link to="/submit-ticket" className="footer__link">Submit Ticket</Link>
+                  <Link to="/submit-ticket" className="footer__link">Contact Us</Link>
                 </div>
                 <div className="footer__column">
                   <h4 className="footer__column-title">Resources</h4>
-                  <a className="footer__link">Knowledge Base</a>
-                  <a className="footer__link">FAQ</a>
+                  <Link to="/help-center" className="footer__link">Knowledge Base</Link>
+                  <Link to="/help-center" className="footer__link">FAQ</Link>
                   <a className="footer__link">Blog</a>
                 </div>
                 <div className="footer__column">
